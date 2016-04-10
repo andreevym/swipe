@@ -1,6 +1,7 @@
 package ru.android_studio.swipe;
 
 import android.os.Bundle;
+import android.support.annotation.AnimRes;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +12,8 @@ public class MainActivity extends AppCompatActivity {
 
     private GestureDetectorCompat mDetector;
 
+    int id;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -19,11 +22,15 @@ public class MainActivity extends AppCompatActivity {
         mDetector = new GestureDetectorCompat(this, new MyGestureListener());
 
         if (savedInstanceState == null) {
-            // при первом запуске программы
-            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             OneFragment oneFragment = new OneFragment();
-            fragmentTransaction.add(R.id.fragment, oneFragment, "One");
-            fragmentTransaction.commit();
+            Bundle bundle = new Bundle();
+            bundle.putInt("id", id);
+
+            oneFragment.setArguments(bundle);
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.setCustomAnimations(R.anim.enter_from_top, R.anim.exit_to_bottom);
+            transaction.add(R.id.fragment, oneFragment, "One");
+            transaction.commit();
         }
     }
 
@@ -75,31 +82,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onSwipeRight() {
+        id--;
+
+        changeFragment(R.anim.enter_from_left, R.anim.exit_to_right);
+    }
+
+    private void changeFragment(@AnimRes int enter,  @AnimRes int exit) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(enter, exit);
 
-        transaction.setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right);
+        OneFragment oneFragment = new OneFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt("id", id);
 
-        ThreeFragment twoFragment = new ThreeFragment();
-        transaction.replace(R.id.fragment, twoFragment);
+        oneFragment.setArguments(bundle);
+        transaction.replace(R.id.fragment, oneFragment);
         transaction.addToBackStack(null);
         transaction.commit();
     }
 
     public void onSwipeLeft() {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        id++;
 
-        transaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left);
-
-        TwoFragment twoFragment = new TwoFragment();
-        transaction.replace(R.id.fragment, twoFragment);
-        transaction.addToBackStack(null);
-        transaction.commit();
+        changeFragment(R.anim.enter_from_right, R.anim.exit_to_left);
     }
 
     public void onSwipeTop() {
+        id--;
+
+        changeFragment(R.anim.enter_from_bottom, R.anim.exit_to_top);
     }
 
     public void onSwipeBottom() {
+        id++;
+
+        changeFragment(R.anim.enter_from_top, R.anim.exit_to_bottom);
     }
 
 }
